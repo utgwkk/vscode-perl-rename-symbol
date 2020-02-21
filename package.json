@@ -1,7 +1,7 @@
 {
 	"name": "perl-rename-symbol",
 	"displayName": "perl-rename-symbol",
-	"description": "",
+	"description": "Provides `Rename Symbol` for Perl",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.42.0"
@@ -14,10 +14,12 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [{
-			"command": "extension.helloWorld",
-			"title": "Hello World"
-		}]
+		"commands": [
+			{
+				"command": "extension.helloWorld",
+				"title": "Hello World"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
