@@ -3,6 +3,7 @@
 	"displayName": "Perl Rename Symbol",
 	"description": "Provides `Rename Symbol` for Perl",
 	"version": "0.0.1",
+	"publisher": "utgwkk",
 	"engines": {
 		"vscode": "^1.42.0"
 	},
