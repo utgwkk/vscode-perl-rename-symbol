@@ -5,6 +5,7 @@
 	"version": "0.0.1",
 	"publisher": "utgwkk",
 	"repository": "https://github.com/utgwkk/vscode-perl-rename-symbol",
+	"icon": "icon.png",
 	"engines": {
 		"vscode": "^1.42.0"
 	},
