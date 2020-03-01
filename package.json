@@ -4,6 +4,7 @@
 	"description": "Provides `Rename Symbol` for Perl",
 	"version": "0.0.1",
 	"publisher": "utgwkk",
+	"repository": "https://github.com/utgwkk/vscode-perl-rename-symbol",
 	"engines": {
 		"vscode": "^1.42.0"
 	},
