@@ -21,7 +21,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 		provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.ProviderResult<vscode.WorkspaceEdit> {
 			const identifierRange = document.getWordRangeAtPosition(position);
-			console.log(identifierRange);
 			if (identifierRange === undefined) {
 				return;
 			}
