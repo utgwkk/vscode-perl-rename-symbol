@@ -1,6 +1,6 @@
 {
 	"name": "perl-rename-symbol",
-	"displayName": "perl-rename-symbol",
+	"displayName": "Perl Rename Symbol",
 	"description": "Provides `Rename Symbol` for Perl",
 	"version": "0.0.1",
 	"engines": {
@@ -15,7 +15,7 @@
 	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {
-			"title": "perl-rename-symbol",
+			"title": "Perl Rename Symbol",
 			"properties": {
 				"perl-rename-symbol.pathOfAppPRT": {
 					"type": "string",
