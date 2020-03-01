@@ -3,18 +3,6 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
 
-function getWorkspaceRootDirectory(): string | undefined {
-	const folders = vscode.workspace.workspaceFolders;
-	if (folders === undefined) {
-		return;
-	}
-	const folder = folders[0];
-	if (folder === undefined) {
-		return;
-	}
-	return folder.uri.path;
-}
-
 async function getTargetFiles(): Promise<string[]> {
 	const pmFiles = (await vscode.workspace.findFiles('**/**.pm')).map(url => url.path);
 	const tFiles = (await vscode.workspace.findFiles('**/**.t')).map(url => url.path);
@@ -42,8 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 				getTargetFiles().then(targetFiles => {
 					const oldName = document.getText(identifierRange);
 					const prtArgs = ['prt', 'replace_token', oldName, newName, ...targetFiles];
-					const cwd = getWorkspaceRootDirectory();
-					cp.execSync(prtArgs.join(' '), { cwd, encoding: 'utf-8' });
+					cp.execSync(prtArgs.join(' '));
 					resolve(new vscode.WorkspaceEdit());
 				});
 			});
