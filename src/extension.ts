@@ -11,6 +11,7 @@ async function getTargetFiles(): Promise<string[]> {
 }
 
 const subRegex = /sub\s+([_a-zA-Z][_a-zA-Z0-9]*)\s*{/;
+const identifierRegex = /\$\@\%[_a-zA-Z][_0-9a-zA-Z]/;
 
 function getSubName(document: vscode.TextDocument, position: vscode.Position): string | undefined {
 	for (let lineno = position.line; lineno >= 0; lineno--) {
@@ -32,12 +33,12 @@ export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.languages.registerRenameProvider(
 		{ scheme: 'file', language: 'perl' }, {
 		prepareRename(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Range> {
-			const identifierRange = document.getWordRangeAtPosition(position);
+			const identifierRange = document.getWordRangeAtPosition(position, identifierRegex);
 			return identifierRange;
 		},
 
 		provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.ProviderResult<vscode.WorkspaceEdit> {
-			const identifierRange = document.getWordRangeAtPosition(position);
+			const identifierRange = document.getWordRangeAtPosition(position, identifierRegex);
 			if (identifierRange === undefined) {
 				return;
 			}
