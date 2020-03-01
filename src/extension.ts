@@ -13,6 +13,7 @@ async function getTargetFiles(): Promise<string[]> {
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	const config = vscode.workspace.getConfiguration('perl-rename-symbol');
 	let disposable = vscode.languages.registerRenameProvider(
 		{ scheme: 'file', language: 'perl' }, {
 		prepareRename(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Range> {
@@ -29,7 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
 			return new Promise((resolve) => {
 				getTargetFiles().then(targetFiles => {
 					const oldName = document.getText(identifierRange);
-					const prtArgs = ['prt', 'replace_token', oldName, newName, ...targetFiles];
+					const prtPath = config.get<string>('pathOfAppPRT') || 'prt';
+					const prtArgs = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
 					cp.execSync(prtArgs.join(' '));
 					resolve(new vscode.WorkspaceEdit());
 				});

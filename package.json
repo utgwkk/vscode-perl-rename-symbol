@@ -13,7 +13,18 @@
 		"onLanguage:perl"
 	],
 	"main": "./out/extension.js",
-	"contributes": {},
+	"contributes": {
+		"configuration": {
+			"title": "perl-rename-symbol",
+			"properties": {
+				"perl-rename-symbol.pathOfAppPRT": {
+					"type": "string",
+					"default": "prt",
+					"descrption": "The path of App::PRT (`prt` command)"
+				}
+			}
+		}
+	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
 		"compile": "tsc -p ./",
