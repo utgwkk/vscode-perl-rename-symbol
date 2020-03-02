@@ -4,6 +4,10 @@ All notable changes to the "perl-rename-symbol" extension will be documented in 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [0.1.0]
 
-- Initial release
+- Can rename variables with [App::EditorTools](https://metacpan.org/pod/App::EditorTools)
+
+## [0.0.1]
+
+- Can rename symbols with [App::PRT](https://metacpan.org/pod/prt)
