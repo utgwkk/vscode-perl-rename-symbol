@@ -13,18 +13,6 @@ async function getTargetFiles(): Promise<string[]> {
 const subRegex = /(sub\s+[_a-zA-Z][_a-zA-Z0-9]*\s*{)/;
 const sigilRegex = /[\$@%]/;
 
-function getSubroutineDef(document: vscode.TextDocument, position: vscode.Position): string | undefined {
-	for (let lineno = position.line; lineno >= 0; lineno--) {
-		const lineStart = new vscode.Position(lineno, 0);
-		const line = document.getText(new vscode.Range(lineStart, position));
-		const m = line.match(subRegex);
-		if (m !== null) {
-			return m[1];
-		}
-	}
-	return undefined;
-}
-
 function getSigil(document: vscode.TextDocument, identifierRange: vscode.Range): string | undefined {
 	const sigilRange = new vscode.Range(
 		new vscode.Position(identifierRange.start.line, identifierRange.start.character - 1),
