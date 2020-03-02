@@ -10,20 +10,33 @@ async function getTargetFiles(): Promise<string[]> {
 	return [...plFiles, ...pmFiles, ...tFiles];
 }
 
-const subRegex = /sub\s+([_a-zA-Z][_a-zA-Z0-9]*)\s*{/;
-const identifierRegex = /\$\@\%[_a-zA-Z][_0-9a-zA-Z]/;
+const subRegex = /(sub\s+[_a-zA-Z][_a-zA-Z0-9]*\s*{)/;
+const sigilRegex = /[\$@%]/;
 
-function getSubName(document: vscode.TextDocument, position: vscode.Position): string | undefined {
+function getSubroutineDef(document: vscode.TextDocument, position: vscode.Position): string | undefined {
 	for (let lineno = position.line; lineno >= 0; lineno--) {
 		const lineStart = new vscode.Position(lineno, 0);
 		const line = document.getText(new vscode.Range(lineStart, position));
 		const m = line.match(subRegex);
-		if (m === null) {
-			return undefined;
+		if (m !== null) {
+			return m[1];
 		}
-		return m[1];
 	}
 	return undefined;
+}
+
+function getSigil(document: vscode.TextDocument, identifierRange: vscode.Range): string | undefined {
+	const sigilRange = new vscode.Range(
+		new vscode.Position(identifierRange.start.line, identifierRange.start.character - 1),
+		identifierRange.start
+	);
+	const sigilLike = document.getText(sigilRange);
+	const m = sigilLike.match(sigilRegex);
+	console.log(m);
+	if (m === null) {
+		return undefined;
+	}
+	return sigilLike;
 }
 
 // this method is called when your extension is activated
@@ -33,21 +46,33 @@ export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.languages.registerRenameProvider(
 		{ scheme: 'file', language: 'perl' }, {
 		prepareRename(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Range> {
-			const identifierRange = document.getWordRangeAtPosition(position, identifierRegex);
+			const identifierRange = document.getWordRangeAtPosition(position);
 			return identifierRange;
 		},
 
 		provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.ProviderResult<vscode.WorkspaceEdit> {
-			const identifierRange = document.getWordRangeAtPosition(position, identifierRegex);
+			const identifierRange = document.getWordRangeAtPosition(position);
 			if (identifierRange === undefined) {
 				return;
 			}
 
 			return new Promise((resolve) => {
 				getTargetFiles().then(targetFiles => {
-					const oldName = document.getText(identifierRange);
 					const prtPath = config.get<string>('pathOfAppPRT') || 'prt';
-					const prtArgs = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
+					const oldName = document.getText(identifierRange);
+					let prtArgs: string[];
+					const sigil = getSigil(document, identifierRange);
+					if (sigil !== undefined) {
+						const subroutineDef = getSubroutineDef(document, position);
+						if (subroutineDef === undefined) {
+							prtArgs = [prtPath, 'replace_token', `${sigil}${oldName}`, `${sigil}${newName}`, document.uri.path];
+						} else {
+							prtArgs = [prtPath, 'replace_token', `${sigil}${oldName}`, `${sigil}${newName}`, '--in-statement', `'${subroutineDef}'`, document.uri.path];
+						}
+					} else {
+						prtArgs = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
+					}
+					console.log(prtArgs);
 					cp.execSync(prtArgs.join(' '));
 					resolve(new vscode.WorkspaceEdit());
 				});
