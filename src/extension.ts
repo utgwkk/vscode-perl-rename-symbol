@@ -27,49 +27,48 @@ function getSigil(document: vscode.TextDocument, identifierRange: vscode.Range):
 	return sigilLike;
 }
 
+const config = vscode.workspace.getConfiguration('perl-rename-symbol');
+const renameProvider: vscode.RenameProvider = {
+	prepareRename(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Range> {
+		const identifierRange = document.getWordRangeAtPosition(position);
+		return identifierRange;
+	},
+	provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.ProviderResult<vscode.WorkspaceEdit> {
+		const identifierRange = document.getWordRangeAtPosition(position);
+		if (identifierRange === undefined) {
+			return;
+		}
+		return new Promise((resolve) => {
+			getTargetFiles().then(targetFiles => {
+				const prtPath = config.get<string>('pathOfAppPRT') || 'prt';
+				const editorToolsPath = config.get<string>('pathOfAppEditorTools') || 'editortools';
+				const oldName = document.getText(identifierRange);
+				const sigil = getSigil(document, identifierRange);
+				if (sigil !== undefined) {
+					const args = [editorToolsPath, 'renamevariable', '-c', position.character, '-l', position.line + 1, '-r', newName];
+					const source = document.getText();
+					const output = cp.execSync(args.join(' '), { input: source, encoding: 'utf-8' });
+					const edit = new vscode.WorkspaceEdit();
+					edit.replace(document.uri, new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end), output.toString());
+					resolve(edit);
+				}
+				else {
+					const args = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
+					cp.execSync(args.join(' '));
+					resolve(new vscode.WorkspaceEdit());
+				}
+			});
+		});
+	}
+};
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	const config = vscode.workspace.getConfiguration('perl-rename-symbol');
 	let disposable = vscode.languages.registerRenameProvider(
-		{ scheme: 'file', language: 'perl' }, {
-		prepareRename(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Range> {
-			const identifierRange = document.getWordRangeAtPosition(position);
-			return identifierRange;
-		},
-
-		provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.ProviderResult<vscode.WorkspaceEdit> {
-			const identifierRange = document.getWordRangeAtPosition(position);
-			if (identifierRange === undefined) {
-				return;
-			}
-
-			return new Promise((resolve) => {
-				getTargetFiles().then(targetFiles => {
-					const prtPath = config.get<string>('pathOfAppPRT') || 'prt';
-					const editorToolsPath = config.get<string>('pathOfAppEditorTools') || 'editortools';
-					const oldName = document.getText(identifierRange);
-					const sigil = getSigil(document, identifierRange);
-					if (sigil !== undefined) {
-						const args = [editorToolsPath, 'renamevariable', '-c', position.character, '-l', position.line + 1, '-r', newName];
-						const source = document.getText();
-						const output = cp.execSync(args.join(' '), { input: source, encoding: 'utf-8' });
-						const edit = new vscode.WorkspaceEdit();
-						edit.replace(
-							document.uri,
-							new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end),
-							output.toString()
-						);
-						resolve(edit);
-					} else {
-						const args = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
-						cp.execSync(args.join(' '));
-						resolve(new vscode.WorkspaceEdit());
-					}
-				});
-			});
-		}
-	});
+		{ scheme: 'file', language: 'perl' },
+		renameProvider
+	);
 
 	context.subscriptions.push(disposable);
 }
