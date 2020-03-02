@@ -24,6 +24,11 @@
 					"type": "string",
 					"default": "prt",
 					"descrption": "The path of App::PRT (`prt` command)"
+				},
+				"perl-rename-symbol.pathOfAppEditorTools": {
+					"type": "string",
+					"default": "editortools",
+					"descrption": "The path of App::EditorTools (`editortools` command)"
 				}
 			}
 		}
