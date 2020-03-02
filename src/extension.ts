@@ -10,7 +10,6 @@ async function getTargetFiles(): Promise<string[]> {
 	return [...plFiles, ...pmFiles, ...tFiles];
 }
 
-const subRegex = /(sub\s+[_a-zA-Z][_a-zA-Z0-9]*\s*{)/;
 const sigilRegex = /[\$@%]/;
 
 function getSigil(document: vscode.TextDocument, identifierRange: vscode.Range): string | undefined {
