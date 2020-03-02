@@ -4,6 +4,11 @@ All notable changes to the "perl-rename-symbol" extension will be documented in 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.1.1]
+
+- Remove unused function (refactoring)
+- Add LICENSE
+
 ## [0.1.0]
 
 - Can rename variables with [App::EditorTools](https://metacpan.org/pod/App::EditorTools)
