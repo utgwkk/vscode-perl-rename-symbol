@@ -59,22 +59,25 @@ export function activate(context: vscode.ExtensionContext) {
 			return new Promise((resolve) => {
 				getTargetFiles().then(targetFiles => {
 					const prtPath = config.get<string>('pathOfAppPRT') || 'prt';
+					const editorToolsPath = config.get<string>('pathOfAppEditorTools') || 'editortools';
 					const oldName = document.getText(identifierRange);
-					let prtArgs: string[];
 					const sigil = getSigil(document, identifierRange);
 					if (sigil !== undefined) {
-						const subroutineDef = getSubroutineDef(document, position);
-						if (subroutineDef === undefined) {
-							prtArgs = [prtPath, 'replace_token', `${sigil}${oldName}`, `${sigil}${newName}`, document.uri.path];
-						} else {
-							prtArgs = [prtPath, 'replace_token', `${sigil}${oldName}`, `${sigil}${newName}`, '--in-statement', `'${subroutineDef}'`, document.uri.path];
-						}
+						const args = [editorToolsPath, 'renamevariable', '-c', position.character, '-l', position.line + 1, '-r', newName];
+						const source = document.getText();
+						const output = cp.execSync(args.join(' '), { input: source, encoding: 'utf-8' });
+						const edit = new vscode.WorkspaceEdit();
+						edit.replace(
+							document.uri,
+							new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end),
+							output.toString()
+						);
+						resolve(edit);
 					} else {
-						prtArgs = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
+						const args = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
+						cp.execSync(args.join(' '));
+						resolve(new vscode.WorkspaceEdit());
 					}
-					console.log(prtArgs);
-					cp.execSync(prtArgs.join(' '));
-					resolve(new vscode.WorkspaceEdit());
 				});
 			});
 		}
