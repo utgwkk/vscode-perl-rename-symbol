@@ -2,7 +2,7 @@
 	"name": "perl-rename-symbol",
 	"displayName": "Perl Rename Symbol",
 	"description": "Provides `Rename Symbol` for Perl",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"publisher": "utgwkk",
 	"license": "MIT",
 	"repository": "https://github.com/utgwkk/vscode-perl-rename-symbol",
