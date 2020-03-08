@@ -37,26 +37,25 @@ const renameProvider: vscode.RenameProvider = {
 		if (identifierRange === undefined) {
 			return;
 		}
-		return new Promise((resolve) => {
-			getTargetFiles().then(targetFiles => {
-				const prtPath = config.get<string>('pathOfAppPRT') || 'prt';
-				const editorToolsPath = config.get<string>('pathOfAppEditorTools') || 'editortools';
-				const oldName = document.getText(identifierRange);
-				const sigil = getSigil(document, identifierRange);
-				if (sigil !== undefined) {
-					const args = [editorToolsPath, 'renamevariable', '-c', position.character, '-l', position.line + 1, '-r', newName];
-					const source = document.getText();
-					const output = cp.execSync(args.join(' '), { input: source, encoding: 'utf-8' });
-					const edit = new vscode.WorkspaceEdit();
-					edit.replace(document.uri, new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end), output.toString());
-					resolve(edit);
-				}
-				else {
-					const args = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
-					cp.execSync(args.join(' '));
-					resolve(new vscode.WorkspaceEdit());
-				}
-			});
+		return new Promise(async (resolve) => {
+			const targetFiles = await getTargetFiles();
+			const prtPath = config.get<string>('pathOfAppPRT') || 'prt';
+			const editorToolsPath = config.get<string>('pathOfAppEditorTools') || 'editortools';
+			const oldName = document.getText(identifierRange);
+			const sigil = getSigil(document, identifierRange);
+			if (sigil !== undefined) {
+				const args = [editorToolsPath, 'renamevariable', '-c', position.character, '-l', position.line + 1, '-r', newName];
+				const source = document.getText();
+				const output = cp.execSync(args.join(' '), { input: source, encoding: 'utf-8' });
+				const edit = new vscode.WorkspaceEdit();
+				edit.replace(document.uri, new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end), output.toString());
+				resolve(edit);
+			}
+			else {
+				const args = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
+				cp.execSync(args.join(' '));
+				resolve(new vscode.WorkspaceEdit());
+			}
 		});
 	}
 };
