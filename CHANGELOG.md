@@ -4,6 +4,10 @@ All notable changes to the "perl-rename-symbol" extension will be documented in 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.1]
+
+- No changes
+
 ## [0.2.0]
 
 - Fix README
