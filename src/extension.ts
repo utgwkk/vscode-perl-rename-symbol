@@ -12,7 +12,7 @@ function getConfig<T>(section: string, defaultValue: T): T {
 }
 
 async function getTargetFiles(): Promise<string[]> {
-	const filePatterns = ['**/**.pl', '**/**.pm', '**/**.t'];
+	const filePatterns = getConfig<string[]>('targetFilePatterns', ['**/**.pl', '**/**.pm', '**/**.t']);
 	const findPromise = await Promise.all(filePatterns.map(p => vscode.workspace.findFiles(p)));
 	const files = findPromise.reduce((xs, ys) => xs.concat(ys), []);
 	return files.map(f => f.path);

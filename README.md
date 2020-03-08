@@ -27,3 +27,7 @@ The path of App::PRT, default is `prt`.
 ### `perl-rename-symbol.pathOfAppEditorTools`
 
 The path of App::EditorTools, default is `editortools`.
+
+### `perl-rename-symbol.targetFilePatterns`
+
+The glob pattern matched to Perl files, default is `["**/**.pl", "**/**.pm", "**/**.t"]`.

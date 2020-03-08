@@ -30,6 +30,15 @@
 					"type": "string",
 					"default": "editortools",
 					"descrption": "The path of App::EditorTools (`editortools` command)"
+				},
+				"perl-rename-symbol.targetFilePatterns": {
+					"type": "array",
+					"default": [
+						"**/**.pl",
+						"**/**.pm",
+						"**/**.t"
+					],
+					"description": "The glob pattern matched to Perl files"
 				}
 			}
 		}
