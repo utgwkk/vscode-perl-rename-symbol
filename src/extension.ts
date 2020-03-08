@@ -4,10 +4,10 @@ import * as vscode from 'vscode';
 import * as cp from 'child_process';
 
 async function getTargetFiles(): Promise<string[]> {
-	const plFiles = (await vscode.workspace.findFiles('**/**.pl')).map(url => url.path);
-	const pmFiles = (await vscode.workspace.findFiles('**/**.pm')).map(url => url.path);
-	const tFiles = (await vscode.workspace.findFiles('**/**.t')).map(url => url.path);
-	return [...plFiles, ...pmFiles, ...tFiles];
+	const filePatterns = ['**/**.pl', '**/**.pm', '**/**.t'];
+	const findPromise = await Promise.all(filePatterns.map(p => vscode.workspace.findFiles(p)));
+	const files = findPromise.reduce((xs, ys) => xs.concat(ys), []);
+	return files.map(f => f.path);
 }
 
 const sigilRegex = /[\$@%]/;
