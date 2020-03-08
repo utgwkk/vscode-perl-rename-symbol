@@ -3,6 +3,14 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
 
+function getConfig<T>(section: string, defaultValue: T): T {
+	const value = vscode.workspace.getConfiguration('perl-rename-symbol').get<T>(section);
+	if (value === undefined) {
+		return defaultValue;
+	}
+	return value;
+}
+
 async function getTargetFiles(): Promise<string[]> {
 	const filePatterns = ['**/**.pl', '**/**.pm', '**/**.t'];
 	const findPromise = await Promise.all(filePatterns.map(p => vscode.workspace.findFiles(p)));
@@ -39,8 +47,8 @@ const renameProvider: vscode.RenameProvider = {
 		}
 		return new Promise(async (resolve, reject) => {
 			const targetFiles = await getTargetFiles();
-			const prtPath = config.get<string>('pathOfAppPRT') || 'prt';
-			const editorToolsPath = config.get<string>('pathOfAppEditorTools') || 'editortools';
+			const prtPath = getConfig('pathOfAppPRT', 'prt');
+			const editorToolsPath = getConfig('pathOfAppEditorTools', 'editortools');
 			const oldName = document.getText(identifierRange);
 			const sigil = getSigil(document, identifierRange);
 			if (sigil !== undefined) {
