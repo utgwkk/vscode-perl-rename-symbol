@@ -34,7 +34,6 @@ function getSigil(document: vscode.TextDocument, identifierRange: vscode.Range):
 	return sigilLike;
 }
 
-const config = vscode.workspace.getConfiguration('perl-rename-symbol');
 const renameProvider: vscode.RenameProvider = {
 	prepareRename(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Range> {
 		const identifierRange = document.getWordRangeAtPosition(position);
