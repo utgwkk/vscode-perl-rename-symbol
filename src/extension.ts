@@ -23,7 +23,6 @@ function grepFiles(files: string[], query: string): Promise<string[]> {
 			const cwd = workspaceFolders[0].uri.path;
 			cp.execSync('git status', { cwd });
 			const output = cp.execSync(`git grep --name-only "${query}" -- ${files.join(' ')}`, { cwd, encoding: 'utf-8' });
-			console.log(output);
 			resolve(output.toString().trim().split(/\s+/).map(p => `${cwd}/${p.trim()}`));
 		} catch (e) {
 			resolve(files);
@@ -48,7 +47,6 @@ function getSigil(document: vscode.TextDocument, identifierRange: vscode.Range):
 	);
 	const sigilLike = document.getText(sigilRange);
 	const m = sigilLike.match(sigilRegex);
-	console.log(m);
 	if (m === null) {
 		return undefined;
 	}
