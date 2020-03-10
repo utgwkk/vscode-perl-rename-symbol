@@ -90,15 +90,20 @@ const renameProvider: vscode.RenameProvider = {
 			}
 			else {
 				const targetFiles = await getTargetFiles(oldName);
-				console.log(targetFiles);
-				const args = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
-				cp.exec(args.join(' '), (error) => {
-					if (error !== null) {
-						reject(error);
-					} else {
-						resolve(new vscode.WorkspaceEdit());
-					}
-				});
+				const argss = targetFiles.map(f => [prtPath, 'replace_token', oldName, newName, f]);
+				await Promise.all(
+					argss.map(args => new Promise((innerResolve, innerReject) => {
+						cp.exec(args.join(' '), (error) => {
+							if (error !== null) {
+								innerReject(error);
+								reject(error);
+							} else {
+								innerResolve();
+							}
+						});
+					}))
+				);
+				resolve(new vscode.WorkspaceEdit());
 			}
 		});
 	}
