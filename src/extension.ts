@@ -36,10 +36,16 @@ function getSigil(document: vscode.TextDocument, identifierRange: vscode.Range):
 
 const renameProvider: vscode.RenameProvider = {
 	prepareRename(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Range> {
+		if (token.isCancellationRequested) {
+			return;
+		}
 		const identifierRange = document.getWordRangeAtPosition(position);
 		return identifierRange;
 	},
 	provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.ProviderResult<vscode.WorkspaceEdit> {
+		if (token.isCancellationRequested) {
+			return;
+		}
 		const identifierRange = document.getWordRangeAtPosition(position);
 		if (identifierRange === undefined) {
 			return;
