@@ -11,11 +11,32 @@ function getConfig<T>(section: string, defaultValue: T): T {
 	return value;
 }
 
-async function getTargetFiles(): Promise<string[]> {
+function grepFiles(files: string[], query: string): Promise<string[]> {
+	return new Promise(resolve => {
+		try {
+			// try to check git is available
+			const workspaceFolders = vscode.workspace.workspaceFolders;
+			if (workspaceFolders === undefined) {
+				resolve(files);
+				return;
+			}
+			const cwd = workspaceFolders[0].uri.path;
+			cp.execSync('git status', { cwd });
+			const output = cp.execSync(`git grep --name-only "${query}" -- ${files.join(' ')}`, { cwd, encoding: 'utf-8' });
+			console.log(output);
+			resolve(output.toString().trim().split(/\s+/).map(p => `${cwd}/${p.trim()}`));
+		} catch (e) {
+			resolve(files);
+		}
+		resolve(files);
+	});
+}
+
+async function getTargetFiles(query: string): Promise<string[]> {
 	const filePatterns = getConfig<string[]>('targetFilePatterns', ['**/**.pl', '**/**.pm', '**/**.t']);
 	const findPromise = await Promise.all(filePatterns.map(p => vscode.workspace.findFiles(p)));
-	const files = findPromise.reduce((xs, ys) => xs.concat(ys), []);
-	return files.map(f => f.path);
+	const files = findPromise.reduce((xs, ys) => xs.concat(ys), []).map(f => f.path);
+	return grepFiles(files, query);
 }
 
 const sigilRegex = /[\$@%]/;
@@ -51,7 +72,6 @@ const renameProvider: vscode.RenameProvider = {
 			return;
 		}
 		return new Promise(async (resolve, reject) => {
-			const targetFiles = await getTargetFiles();
 			const prtPath = getConfig('pathOfAppPRT', 'prt');
 			const editorToolsPath = getConfig('pathOfAppEditorTools', 'editortools');
 			const oldName = document.getText(identifierRange);
@@ -69,6 +89,8 @@ const renameProvider: vscode.RenameProvider = {
 				}
 			}
 			else {
+				const targetFiles = await getTargetFiles(oldName);
+				console.log(targetFiles);
 				const args = [prtPath, 'replace_token', oldName, newName, ...targetFiles];
 				cp.exec(args.join(' '), (error) => {
 					if (error !== null) {
