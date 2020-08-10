@@ -57,7 +57,7 @@ async function getTargetFiles(query: string): Promise<string[]> {
   return grepFiles(files, query);
 }
 
-const sigilRegex = /[\$@%]/;
+const sigilRegex = /[$@%]/;
 
 function getSigil(
   document: vscode.TextDocument,
@@ -180,4 +180,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+  // noop
+}
