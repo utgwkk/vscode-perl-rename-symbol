@@ -81,8 +81,10 @@ function getSigil(
 const perlBarewordRegex = /(?:[0-9a-zA-Z_]+)(?:::[0-9a-zA-Z_]+)*/;
 
 function tryToRenameClass(document: vscode.TextDocument, position: vscode.Position, range: vscode.Range): boolean {
-  // TODO
-  return false;
+  const lineText = document.getText(document.lineAt(position.line).range);
+  const packageDeclarationRegexp = /^package\s+(?:[0-9a-zA-Z_]+)(?:::[0-9a-zA-Z_]+)*\s*;/;
+
+  return packageDeclarationRegexp.test(lineText);
 }
 
 const renameProvider: vscode.RenameProvider = {
