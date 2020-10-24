@@ -109,16 +109,18 @@ const renameProvider: vscode.RenameProvider = {
       return renameWithEditorTools(position, newName, document);
     }
 
-    return renameWithPRT(document, identifierRange, newName);
+    return renameWithPRT(document, identifierRange, newName, 'replace_token');
   },
 };
 
-async function renameWithPRT(document: vscode.TextDocument, identifierRange: vscode.Range, newName: string): Promise<vscode.WorkspaceEdit> {
+type PRTCommand = 'replace_token';
+
+async function renameWithPRT(document: vscode.TextDocument, identifierRange: vscode.Range, newName: string, prtCommand: PRTCommand): Promise<vscode.WorkspaceEdit> {
   const prtPath = getConfig("pathOfAppPRT", "prt");
 
   const oldName = document.getText(identifierRange);
   const targetFiles = await getTargetFiles(oldName);
-  const args = `${prtPath} replace_token ${oldName} ${newName} ${targetFiles.map((f) => `"${f}"`).join(' ')}`
+  const args = `${prtPath} ${prtCommand} ${oldName} ${newName} ${targetFiles.map((f) => `"${f}"`).join(' ')}`
   cp.execSync(args);
 
   return new vscode.WorkspaceEdit();
