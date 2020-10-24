@@ -109,37 +109,20 @@ const renameProvider: vscode.RenameProvider = {
       return renameWithEditorTools(position, newName, document);
     }
 
-    return new Promise(async (resolve, reject) => {
-      const prtPath = getConfig("pathOfAppPRT", "prt");
-
-      const oldName = document.getText(identifierRange);
-      const targetFiles = await getTargetFiles(oldName);
-      const argss = targetFiles.map((f) => [
-        prtPath,
-        "replace_token",
-        oldName,
-        newName,
-        f,
-      ]);
-      await Promise.all(
-        argss.map(
-          (args) =>
-            new Promise((innerResolve, innerReject) => {
-              cp.exec(args.join(" "), (error) => {
-                if (error !== null) {
-                  innerReject(error);
-                  reject(error);
-                } else {
-                  innerResolve();
-                }
-              });
-            })
-        )
-      );
-      resolve(new vscode.WorkspaceEdit());
-    });
+    return renameWithPRT(document, identifierRange, newName);
   },
 };
+
+async function renameWithPRT(document: vscode.TextDocument, identifierRange: vscode.Range, newName: string): Promise<vscode.WorkspaceEdit> {
+  const prtPath = getConfig("pathOfAppPRT", "prt");
+
+  const oldName = document.getText(identifierRange);
+  const targetFiles = await getTargetFiles(oldName);
+  const args = `${prtPath} replace_token ${oldName} ${newName} ${targetFiles.map((f) => `"${f}"`).join(' ')}`
+  cp.execSync(args);
+
+  return new vscode.WorkspaceEdit();
+}
 
 async function renameWithEditorTools(position: vscode.Position, newName: string, document: vscode.TextDocument): Promise<vscode.WorkspaceEdit> {
   const editorToolsPath = getConfig("pathOfAppEditorTools", "editortools");
