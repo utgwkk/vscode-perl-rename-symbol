@@ -103,70 +103,55 @@ const renameProvider: vscode.RenameProvider = {
     if (identifierRange === undefined) {
       return;
     }
-    return new Promise(async (resolve, reject) => {
-      const prtPath = getConfig("pathOfAppPRT", "prt");
-      const editorToolsPath = getConfig("pathOfAppEditorTools", "editortools");
-      const oldName = document.getText(identifierRange);
-      const sigil = getSigil(document, identifierRange);
-      if (sigil !== undefined) {
-        const args = [
-          editorToolsPath,
-          "renamevariable",
-          "-c",
-          position.character,
-          "-l",
-          position.line + 1,
-          "-r",
-          newName,
-        ];
-        const source = document.getText();
-        try {
-          const output = cp.execSync(args.join(" "), {
-            input: source,
-            encoding: "utf-8",
-          });
-          const edit = new vscode.WorkspaceEdit();
-          edit.replace(
-            document.uri,
-            new vscode.Range(
-              document.lineAt(0).range.start,
-              document.lineAt(document.lineCount - 1).range.end
-            ),
-            output.toString()
-          );
-          resolve(edit);
-        } catch (error) {
-          reject(error);
-        }
-      } else {
-        const targetFiles = await getTargetFiles(oldName);
-        const argss = targetFiles.map((f) => [
-          prtPath,
-          "replace_token",
-          oldName,
-          newName,
-          f,
-        ]);
-        await Promise.all(
-          argss.map(
-            (args) =>
-              new Promise((innerResolve, innerReject) => {
-                cp.exec(args.join(" "), (error) => {
-                  if (error !== null) {
-                    innerReject(error);
-                    reject(error);
-                  } else {
-                    innerResolve();
-                  }
-                });
-              })
-          )
-        );
-        resolve(new vscode.WorkspaceEdit());
-      }
-    });
+
+    const sigil = getSigil(document, identifierRange);
+    if (sigil !== undefined) {
+      return renameWithEditorTools(position, newName, document);
+    }
+
+    return renameWithPRT(document, identifierRange, newName);
   },
 };
+
+async function renameWithPRT(document: vscode.TextDocument, identifierRange: vscode.Range, newName: string): Promise<vscode.WorkspaceEdit> {
+  const prtPath = getConfig("pathOfAppPRT", "prt");
+
+  const oldName = document.getText(identifierRange);
+  const targetFiles = await getTargetFiles(oldName);
+  const args = `${prtPath} replace_token ${oldName} ${newName} ${targetFiles.map((f) => `"${f}"`).join(' ')}`
+  cp.execSync(args);
+
+  return new vscode.WorkspaceEdit();
+}
+
+async function renameWithEditorTools(position: vscode.Position, newName: string, document: vscode.TextDocument): Promise<vscode.WorkspaceEdit> {
+  const editorToolsPath = getConfig("pathOfAppEditorTools", "editortools");
+  const args = [
+    editorToolsPath,
+    "renamevariable",
+    "-c",
+    position.character,
+    "-l",
+    position.line + 1,
+    "-r",
+    newName,
+  ];
+  const source = document.getText();
+  const output = cp.execSync(args.join(" "), {
+    input: source,
+    encoding: "utf-8",
+  });
+  const edit = new vscode.WorkspaceEdit();
+  edit.replace(
+    document.uri,
+    new vscode.Range(
+      document.lineAt(0).range.start,
+      document.lineAt(document.lineCount - 1).range.end
+    ),
+    output.toString()
+  );
+  return edit;
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
