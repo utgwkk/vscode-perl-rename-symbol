@@ -78,6 +78,13 @@ function getSigil(
   return sigilLike;
 }
 
+const perlBarewordRegex = /(?:[0-9a-zA-Z_]+)(?:::[0-9a-zA-Z_]+)*/;
+
+function tryToRenameClass(document: vscode.TextDocument, position: vscode.Position, range: vscode.Range): boolean {
+  // TODO
+  return false;
+}
+
 const renameProvider: vscode.RenameProvider = {
   prepareRename(
     document: vscode.TextDocument,
@@ -87,7 +94,7 @@ const renameProvider: vscode.RenameProvider = {
     if (token.isCancellationRequested) {
       return;
     }
-    const identifierRange = document.getWordRangeAtPosition(position);
+    const identifierRange = document.getWordRangeAtPosition(position, perlBarewordRegex);
     return identifierRange;
   },
   provideRenameEdits(
@@ -99,7 +106,7 @@ const renameProvider: vscode.RenameProvider = {
     if (token.isCancellationRequested) {
       return;
     }
-    const identifierRange = document.getWordRangeAtPosition(position);
+    const identifierRange = document.getWordRangeAtPosition(position, perlBarewordRegex);
     if (identifierRange === undefined) {
       return;
     }
@@ -109,11 +116,15 @@ const renameProvider: vscode.RenameProvider = {
       return renameWithEditorTools(position, newName, document);
     }
 
-    return renameWithPRT(document, identifierRange, newName, 'replace_token');
+    if (tryToRenameClass(document, position, identifierRange)) {
+      return renameWithPRT(document, identifierRange, newName, 'rename_class');
+    } else {
+      return renameWithPRT(document, identifierRange, newName, 'replace_token');
+    }
   },
 };
 
-type PRTCommand = 'replace_token';
+type PRTCommand = 'replace_token' | 'rename_class';
 
 async function renameWithPRT(document: vscode.TextDocument, identifierRange: vscode.Range, newName: string, prtCommand: PRTCommand): Promise<vscode.WorkspaceEdit> {
   const prtPath = getConfig("pathOfAppPRT", "prt");
