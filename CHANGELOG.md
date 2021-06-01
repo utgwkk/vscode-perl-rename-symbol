@@ -4,6 +4,10 @@ All notable changes to the "perl-rename-symbol" extension will be documented in 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.4]
+
+- Update dependency libraries
+
 ## [0.2.3]
 
 - Execute prt command in parallel
